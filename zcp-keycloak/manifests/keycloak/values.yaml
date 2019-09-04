@@ -1,0 +1,69 @@
+keycloak:
+  tolerations:
+    - effect: NoSchedule
+      key: management
+      operator: Equal
+      value: "true"
+  image:
+    repository: registry.au-syd.bluemix.net/cloudzcp/keycloak
+
+  affinity: |
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+        - matchExpressions:
+          - key: beta.kubernetes.io/arch
+            operator: In
+            values:
+            - amd64
+          - key: role
+            operator: In
+            values:
+            - management
+
+  extraInitContainers: |
+    - name: theme-provider
+      image: registry.au-syd.bluemix.net/cloudzcp/zcp-keycloak-theme-provider:1.0.0
+      imagePullPolicy: Always
+      command:
+        - sh
+      args:
+        - -c
+        - |
+          echo "Copying theme..."
+          cp -R /zcp/* /theme
+      volumeMounts:
+        - name: theme
+          mountPath: /theme
+
+  extraVolumeMounts: |
+    - name: theme
+      mountPath: /opt/jboss/keycloak/themes/zcp
+    - name: realm-secret
+      mountPath: "/realm/"
+      readOnly: true
+
+  extraVolumes: |
+    - name: theme
+      emptyDir: {}
+    - name: realm-secret
+      secret:
+        secretName: realm-secret
+
+  extraArgs: -Dkeycloak.import=/realm/realm-zcp-export.json
+
+  persistence:
+    deployPostgres: false
+    dbHost: zcp-oidc-postgresql
+
+  ingress:
+    enabled: true
+    path: /
+
+    annotations: 
+      # kubernetes.io/ingress.class: nginx
+      # kubernetes.io/tls-acme: "true"
+      # ingress.kubernetes.io/affinity: cookie
+      ingress.bluemix.net/redirect-to-https: "True"
+#      ingress.bluemix.net/ALB-ID: "private-cr7a9b181c82674f478e461c648c3000da-alb1"
+
