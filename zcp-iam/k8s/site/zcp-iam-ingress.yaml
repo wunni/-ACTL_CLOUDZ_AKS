@@ -1,0 +1,21 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  annotations:
+    #ingress.bluemix.net/ALB-ID: private-cr7a9b181c82674f478e461c648c3000da-alb1
+    ingress.bluemix.net/redirect-to-https: "True"
+  name: zcp-iam-ingress
+  namespace: zcp-system
+spec:
+  tls:
+  - hosts:
+    - lawai-logging.cloudzcp.io
+    secretName: cloudzcp-io-cert
+  rules:
+  - host: lawai-logging.cloudzcp.io
+    http:
+      paths:
+      - backend:
+          serviceName: zcp-iam
+          servicePort: 80
+

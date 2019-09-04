@@ -1,0 +1,88 @@
+keycloak:
+  serverUrl: http://keycloak.cberry.xyz/auth
+  master:
+    realm: zcp
+    clientId: account
+    clientSecret: 611c87d9-37f3-4078-b500-542cf419b113
+    password: admin1234
+    username: 1800275@partner.skcc.com
+
+spring:
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017
+      database: iam
+
+# for actuator
+endpoints:
+  prometheus:
+    sensitive: false
+management:
+  port: 9000
+
+management.metrics.distribution:
+  sla[http.server.requests]: 100ms, 200ms, 400ms
+  percentiles-histogram[http.server.requests]: true
+
+logging:
+  level:
+    com:
+      skcc:
+        cloudz:
+          zcp: DEBUG
+    org:
+      hibernate: DEBUG
+      springframework:
+        security: DEBUG
+        web: DEBUG
+
+kube:
+  client:
+    api:
+      output:
+        pretty: true
+  server:
+    apiserver:
+      endpoint: https://169.56.69.242:23078
+    metrics:
+      type: metrics-server
+    
+server:
+  port: 8282
+zcp:
+  keycloak:
+    realm: zcp
+    token-url: /realms/zcp/protocol/openid-connect/token
+  kube:
+    namespace: zcp-system
+  wsh:
+    template: classpath:ssh/pod.yaml
+    image: cloudzcp/wsh:1.1.0
+
+jenkins:
+  url: https://jenkins.cloudzcp.io
+  token: username:api-token
+  template: 
+    folder: classpath:jenkins/folder.xml
+
+role:
+  cluster:
+    cluster-admin:
+    - catalog-manager
+    - log-manager
+    - cicd-manager
+    member:
+  namespace:
+    admin:
+    - log-manager
+    - catalog-manager
+    - ${namespace}-admin
+    cicd-manager:
+    - log-manager
+    - ${namespace}-cicd-manager
+    developer:
+    - ${namespace}-developer
+  jenkins:
+    admin: ${namespace}-admin
+    cicd-manager: ${namespace}-cicd-manager
+    developer: ${namespace}-developer

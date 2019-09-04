@@ -1,0 +1,34 @@
+nameOverride: "mongo"
+
+mongodbDatabase: iam
+mongodbUsername: iam
+mongodbPassword: iam # CHANGE
+
+image:
+  registry: registry.au-syd.bluemix.net
+  repository: cloudzcp/mongodb
+  tag: 4.0.6
+
+persistence:
+  enabled: true
+  existingClaim: zcp-iam-mongodb
+
+tolerations:
+  - effect: NoSchedule
+    key: management
+    operator: Equal
+    value: "true"
+
+affinity:
+  nodeAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      nodeSelectorTerms:
+        - matchExpressions:
+            - key: beta.kubernetes.io/arch
+              operator: In
+              values:
+                - amd64
+            - key: role
+              operator: In
+              values:
+                - management
