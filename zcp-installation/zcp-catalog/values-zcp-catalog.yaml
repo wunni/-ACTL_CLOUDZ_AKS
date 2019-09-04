@@ -1,0 +1,107 @@
+# Default values for monocular.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+api:
+  replicaCount: 1
+  resources:
+    limits:
+      cpu: 500m
+      memory: 1Gi
+  livenessProbe:
+    initialDelaySeconds: 1800
+  config:
+    cacheRefreshInterval: 60
+  tolerations:
+    - effect: NoSchedule
+      key: management
+      operator: Equal
+      value: "true"
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+        - matchExpressions:
+          - key: beta.kubernetes.io/arch
+            operator: In
+            values:
+            - amd64
+          - key: role
+            operator: In
+            values:
+            - management
+
+ui:
+  replicaCount: 1
+  image:
+    repository: cloudzcp/zcp-catalog-ui
+    tag: 1.0.0-062
+    pullPolicy: Always
+  appName: CloudZ CP Catalog
+  backendHostname: /api
+  tolerations:
+    - effect: NoSchedule
+      key: management
+      operator: Equal
+      value: "true"
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+        - matchExpressions:
+          - key: beta.kubernetes.io/arch
+            operator: In
+            values:
+            - amd64
+          - key: role
+            operator: In
+            values:
+            - management
+
+prerender:
+  replicaCount: 1
+  tolerations:
+    - effect: NoSchedule
+      key: management
+      operator: Equal
+      value: "true"
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+        - matchExpressions:
+          - key: beta.kubernetes.io/arch
+            operator: In
+            values:
+            - amd64
+          - key: role
+            operator: In
+            values:
+            - management
+
+ingress:
+  enabled: false
+
+mongodb:
+  persistence:
+    enabled: true
+    existingClaim: zcp-catalog-mongodb
+    accessMode: ReadWriteOnce
+    size: 20Gi
+  tolerations:
+    - effect: NoSchedule
+      key: management
+      operator: Equal
+      value: "true"
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+        - matchExpressions:
+          - key: beta.kubernetes.io/arch
+            operator: In
+            values:
+            - amd64
+          - key: role
+            operator: In
+            values:
+            - management

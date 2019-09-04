@@ -1,0 +1,89 @@
+## Override the name of the Chart.
+##
+# nameOverride:
+
+image:
+  repository: registry.au-syd.bluemix.net/cloudzcp/gitea
+  tag: 1.4
+
+## Kubernetes configuration
+## For minikube, set this to NodePort, elsewhere use LoadBalancer
+##
+serviceType: ClusterIP
+service:
+  ingress:
+    enabled: true
+    annotations:
+      # ingress.bluemix.net/ALB-ID: private-cr9b51e2d31cef4589984913b350fa8ed8-alb1  # CHANGE
+      ingress.bluemix.net/redirect-to-https: "True"
+      ingress.bluemix.net/client-max-body-size: size=50M
+    hosts:
+      host: git.cloudzcp.io  #CHANGE
+    tls:
+    - hosts:
+      - git.cloudzcp.io  # CHANGE
+      secretName: cloudzcp-io-cert
+affinity:
+  nodeAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: beta.kubernetes.io/arch
+          operator: In
+          values:
+          - "amd64"
+        - key: role
+          operator: In
+          values:
+          - "management"
+tolerations:
+- key: "management"
+  operator: "Equal"
+  value: "true"
+  effect: "NoSchedule"
+      
+## Persistent Volume Storage configuration.
+## ref: https://kubernetes.io/docs/user-guide/persistent-volumes
+##
+persistence:
+  ## Enable persistence using Persistent Volume Claims.
+  ##
+  enabled: true
+
+  existingClaim: zcp-gitea
+
+## Configuration values for the postgresql dependency.
+## ref: https://github.com/kubernetes/charts/blob/master/stable/postgresql/README.md
+##
+postgresql:
+  image: "registry.au-syd.bluemix.net/cloudzcp/postgres"
+  ## postgres image version
+  ## ref: https://hub.docker.com/r/library/postgres/tags/
+  ##
+  imageTag: "9.6.2"
+  ## Persistent Volume Storage configuration.
+  ## ref: https://kubernetes.io/docs/user-guide/persistent-volumes
+  ##
+  persistence:
+    ## Enable PostgreSQL persistence using Persistent Volume Claims.
+    ##
+    enabled: true
+    existingClaim: zcp-gitea-postgres 
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+        - matchExpressions:
+          - key: beta.kubernetes.io/arch
+            operator: In
+            values:
+            - "amd64"
+          - key: role
+            operator: In
+            values:
+            - "management"
+  tolerations:
+  - key: "management"
+    operator: "Equal"
+    value: "true"
+    effect: "NoSchedule"

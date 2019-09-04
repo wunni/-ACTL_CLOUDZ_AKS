@@ -1,0 +1,148 @@
+## for DRY
+common:
+  resources: &100m-256Mi
+    requests:
+      memory: 256Mi
+      cpu: 100m
+  tolerations: &tolerations
+  - effect: NoSchedule
+    key: management
+    operator: Equal
+    value: "true"
+  affinity: &affinity
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+        - matchExpressions:
+          - key: beta.kubernetes.io/arch
+            operator: In
+            values:
+            - amd64
+          - key: role
+            operator: In
+            values:
+            - management
+
+
+#harborImageTag: &harbor_image_tag v1.5.0-chart-patch
+externalDomain: ***-registry.cloudzcp.io   # CHANGE
+
+#tlsCrt: 
+#tlsKey: 
+#caCrt: 
+
+ingress:
+  annotations:
+    #ingress.bluemix.net/ALB-ID: private-xxxx-alb1  # CHANGE: IF use Private ALB
+    ingress.bluemix.net/redirect-to-https: "True"
+    ingress.bluemix.net/client-max-body-size: size=900m
+
+adminserver:
+  image:
+    repository: registry.au-syd.bluemix.net/cloudzcp/harbor-adminserver
+  #adminPassword: xxxx # CHANGE
+  resources: *100m-256Mi
+  tolerations: *tolerations
+  affinity: *affinity
+
+jobservice:
+  image:
+    repository: registry.au-syd.bluemix.net/cloudzcp/harbor-jobservice
+  resources: *100m-256Mi
+  tolerations: *tolerations
+  affinity: *affinity
+
+ui:
+  image:
+    repository: registry.au-syd.bluemix.net/cloudzcp/harbor-ui
+  resources: *100m-256Mi
+  tolerations: *tolerations
+  affinity: *affinity
+
+mysql:
+  image:
+    repository: registry.au-syd.bluemix.net/cloudzcp/harbor-db
+  resources: *100m-256Mi
+  tolerations: *tolerations
+  affinity: *affinity
+
+registry:
+  image:
+    repository: registry.au-syd.bluemix.net/cloudzcp/registry-photon
+  #objectStorage:  # CHANGE
+  #  s3:
+  #    region: seo-ap-geo
+  #    accesskey: ***
+  #    secretkey: ***
+  #    bucket: zcp-registry-***
+  #    encrypt: "true"
+  #    regionendpoint: s3.seo.ap.cloud-object-storage.appdomain.cloud
+  volumes:
+    data:
+      size: 20Gi
+      storageClass: "ibmc-block-retain-silver"
+  resources: *100m-256Mi
+  tolerations: *tolerations
+  affinity: *affinity
+
+clair:
+  enabled: true
+  image:
+    repository: registry.au-syd.bluemix.net/cloudzcp/clair-photon
+  resources: *100m-256Mi
+  pgResources: *100m-256Mi
+  volumes:
+    resources: *100m-256Mi
+  tolerations: *tolerations
+  affinity: *affinity
+
+postgresql:
+  image: registry.au-syd.bluemix.net/cloudzcp/postgres
+  affinity: *affinity
+  persistence:
+    accessMode: ReadWriteOnce
+    enabled: true
+    existingClaim: zcp-registry-postgresql
+    size: 20Gi
+  tolerations: *tolerations
+
+redis:
+  image:
+    registry: registry.au-syd.bluemix.net
+    repository: cloudzcp/redis
+    tag: 4.0.9
+  master:
+    nodeSelector:
+      beta.kubernetes.io/arch: amd64
+      role: management
+    tolerations: *tolerations
+  usePassword: false
+
+notary:
+  enabled: false
+
+backup:
+  enabled: true
+  schedule: 10 15 * * *
+  serviceAccount: zcp-system-admin
+  #serviceAccountSecretName: zcp-system-admin-token-xxx
+  kubectl:
+    image:
+      repository: registry.au-syd.bluemix.net/cloudzcp/k8s-kubectl
+  s3:
+    image:
+      repository: registry.au-syd.bluemix.net/cloudzcp/aws-cli
+  #objectStorage:  # CHANGE
+  #  s3:
+  #    region: seo-ap-geo
+  #    accesskey: ***
+  #    secretkey: ***
+  #    bucket: zcp-backup-***
+  #    encrypt: "true"
+  #    regionendpoint: s3.seo.ap.cloud-object-storage.appdomain.cloud
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+  tolerations: *tolerations
+  affinity: *affinity

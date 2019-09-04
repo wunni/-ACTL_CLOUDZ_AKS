@@ -1,0 +1,27 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  annotations:
+    ingress.bluemix.net/rewrite-path: "serviceName=zcp-catalog-zcp-catalog-ui rewrite=/ui;serviceName=zcp-catalog-zcp-catalog-api rewrite=/"
+  name: zcp-sso-for-catalog
+spec:
+  rules:
+  - host: catalog.cloudzcp.io
+    http:
+      paths:
+      - backend:
+          serviceName: zcp-sso-for-catalog
+          servicePort: 80
+        path: /
+      - backend:
+          serviceName: zcp-catalog-zcp-catalog-ui
+          servicePort: 80
+        path: /ui
+      - backend:
+          serviceName: zcp-catalog-zcp-catalog-api
+          servicePort: 80
+        path: /api/
+  tls:
+  - hosts:
+    - catalog.cloudzcp.io
+    secretName: cloudzcp-io-cert

@@ -1,0 +1,124 @@
+# Default values for monocular.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+api:
+  replicaCount: 1
+  resources:
+    limits:
+      cpu: 500m
+      memory: 1Gi
+  image:
+    repository: registry.au-syd.bluemix.net/cloudzcp/monocular-api
+  livenessProbe:
+    initialDelaySeconds: 1800
+  config:
+    repos:
+    - name: zcp
+      #url: http://zcp-git-gitea/gitadmin/charts/raw/branch/master/docs       # internal
+      url: https://cnpst.github.io/charts       # external
+    releasesEnabled: true
+    cacheRefreshInterval: 60
+  tolerations:
+    - effect: NoSchedule
+      key: management
+      operator: Equal
+      value: "true"
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+        - matchExpressions:
+          - key: beta.kubernetes.io/arch
+            operator: In
+            values:
+            - amd64
+          - key: role
+            operator: In
+            values:
+            - management
+
+ui:
+  replicaCount: 1
+  image:
+    repository: registry.au-syd.bluemix.net/cloudzcp/zcp-catalog-ui
+    tag: 1.0.0-062
+  appName: CloudZ CP Catalog
+  backendHostname: /api
+  tolerations:
+    - effect: NoSchedule
+      key: management
+      operator: Equal
+      value: "true"
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+        - matchExpressions:
+          - key: beta.kubernetes.io/arch
+            operator: In
+            values:
+            - amd64
+          - key: role
+            operator: In
+            values:
+            - management
+
+prerender:
+  replicaCount: 1
+  image:
+    repository: registry.au-syd.bluemix.net/cloudzcp/prerender
+  tolerations:
+    - effect: NoSchedule
+      key: management
+      operator: Equal
+      value: "true"
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+        - matchExpressions:
+          - key: beta.kubernetes.io/arch
+            operator: In
+            values:
+            - amd64
+          - key: role
+            operator: In
+            values:
+            - management
+
+## https://console.bluemix.net/docs/containers/cs_ingress.html#ingress
+## https://console.bluemix.net/docs/containers/cs_annotations.html#rewrite-path
+ingress:
+  enabled: false
+  hosts:
+  - gdi-catalog.cloudzcp.io
+  annotations:
+    #ingress.bluemix.net/ALB-ID: private-crd141bb7f5a0047f180fe05ed4b5404a5-alb1
+    ingress.bluemix.net/redirect-to-https: "True"
+    ingress.bluemix.net/rewrite-path: "serviceName=zcp-catalog-zcp-catalog-api rewrite=/"
+  tls:
+    secretName: cloudzcp-io-cert
+
+
+mongodb:
+  persistence:
+    enabled: false
+  image: registry.au-syd.bluemix.net/cloudzcp/mongodb:3.4.9-r1
+  tolerations:
+    - effect: NoSchedule
+      key: management
+      operator: Equal
+      value: "true"
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+        - matchExpressions:
+          - key: beta.kubernetes.io/arch
+            operator: In
+            values:
+            - amd64
+          - key: role
+            operator: In
+            values:
+            - management

@@ -1,0 +1,27 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  annotations:
+    #ingress.bluemix.net/ALB-ID: private-xxxxx-alb1  # CHANGE
+    ingress.bluemix.net/rewrite-path: serviceName=zcp-catalog-zcp-catalog-api rewrite=/
+    ingress.bluemix.net/redirect-to-https: "True"
+  labels:
+    app: zcp-sso-catalog
+  name: zcp-sso-catalog
+spec:
+  rules:
+  - host: gdi-dev-catalog.cloudzcp.io  # CHANGE
+    http:
+      paths:
+      - backend:
+          serviceName: zcp-sso-catalog
+          servicePort: http
+        path: /
+      - backend:
+          serviceName: zcp-catalog-zcp-catalog-api
+          servicePort: 80
+        path: /api/
+  tls:
+  - hosts:
+    - gdi-dev-catalog.cloudzcp.io  # CHANGE
+    secretName: cloudzcp-io-cert   # CHANGE

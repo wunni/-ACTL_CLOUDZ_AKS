@@ -1,0 +1,45 @@
+image:
+  repository: registry.au-syd.bluemix.net/cloudzcp/keycloak-proxy
+  tag: 3.4.2.Final
+
+ingress:
+  enabled: false
+  annotations:
+    #ingress.bluemix.net/ALB-ID: private-xxxx-alb1  # CHANGE
+    ingress.bluemix.net/redirect-to-https: "True"
+    ingress.bluemix.net/rewrite-path: "serviceName=zcp-catalog-zcp-catalog-ui rewrite=/ui;serviceName=zcp-catalog-zcp-catalog-api rewrite=/"
+  hosts:
+    - gdi-dev-catalog.cloudzcp.io  # CHANGE
+  tls:
+  - hosts:
+    - gdi-dev-catalog.cloudzcp.io  # CHANGE
+    secretName: cloudzcp-io-cert   # CHANGE
+
+configmap:
+  targetUrl: "http://zcp-catalog-zcp-catalog-ui"
+  realm: zcp
+  resource: catalog
+  pattern: /*
+  rolesAllowed: catalog-manager  #admin
+
+  authServerUrl: https://gdi-dev-iam.cloudzcp.io/auth  # CHANGE
+  secret: 8d7c396d-123e-4c59-8397-f6fe31e34680         # CHANGE: client secret
+
+tolerations:
+  - effect: NoSchedule
+    key: management
+    operator: Equal
+    value: "true"
+affinity:
+  nodeAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: beta.kubernetes.io/arch
+          operator: In
+          values:
+          - amd64
+        - key: role
+          operator: In
+          values:
+          - management

@@ -1,0 +1,251 @@
+persistence:
+  enabled: true
+
+ingress:
+  annotations:
+    ingress.kubernetes.io/ssl-redirect: "true"
+    ingress.kubernetes.io/body-size: "0"
+    ingress.kubernetes.io/proxy-body-size: "0"
+    ingress.bluemix.net/client-max-body-size: size=900m
+
+adminserver:
+  emailSsl: "true"
+  selfRegistration: "off"
+  resources:
+    requests:
+      memory: 256Mi
+      cpu: 100m
+  tolerations:
+    - effect: NoSchedule
+      key: management
+      operator: Equal
+      value: "true"
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+        - matchExpressions:
+          - key: beta.kubernetes.io/arch
+            operator: In
+            values:
+            - amd64
+          - key: role
+            operator: In
+            values:
+            - management
+
+jobservice:
+  resources:
+    requests:
+      memory: 256Mi
+      cpu: 100m
+  tolerations:
+    - effect: NoSchedule
+      key: management
+      operator: Equal
+      value: "true"
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+        - matchExpressions:
+          - key: beta.kubernetes.io/arch
+            operator: In
+            values:
+            - amd64
+          - key: role
+            operator: In
+            values:
+            - management
+
+ui:
+  resources:
+    requests:
+      memory: 256Mi
+      cpu: 100m
+  tolerations:
+    - effect: NoSchedule
+      key: management
+      operator: Equal
+      value: "true"
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+        - matchExpressions:
+          - key: beta.kubernetes.io/arch
+            operator: In
+            values:
+            - amd64
+          - key: role
+            operator: In
+            values:
+            - management
+
+mysql:
+  resources:
+    requests:
+      memory: 256Mi
+      cpu: 100m
+  tolerations:
+    - effect: NoSchedule
+      key: management
+      operator: Equal
+      value: "true"
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+        - matchExpressions:
+          - key: beta.kubernetes.io/arch
+            operator: In
+            values:
+            - amd64
+          - key: role
+            operator: In
+            values:
+            - management
+
+registry:
+  objectStorage:
+    s3:
+      encrypt: "true"
+  resources:
+    requests:
+      memory: 256Mi
+      cpu: 100m
+  tolerations:
+    - effect: NoSchedule
+      key: management
+      operator: Equal
+      value: "true"
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+        - matchExpressions:
+          - key: beta.kubernetes.io/arch
+            operator: In
+            values:
+            - amd64
+          - key: role
+            operator: In
+            values:
+            - management
+
+clair:
+  resources:
+    requests:
+      memory: 256Mi
+      cpu: 100m
+  pgResources:
+    requests:
+      memory: 256Mi
+      cpu: 100m
+  volumes:
+    resources:
+      requests:
+        memory: 256Mi
+        cpu: 100m
+  tolerations:
+    - effect: NoSchedule
+      key: management
+      operator: Equal
+      value: "true"
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+        - matchExpressions:
+          - key: beta.kubernetes.io/arch
+            operator: In
+            values:
+            - amd64
+          - key: role
+            operator: In
+            values:
+            - management
+
+postgresql:
+  persistence:
+    enabled: true
+    existingClaim: zcp-registry-postgresql
+    accessMode: ReadWriteOnce
+    size: 20Gi
+  tolerations:
+    - effect: NoSchedule
+      key: management
+      operator: Equal
+      value: "true"
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+        - matchExpressions:
+          - key: beta.kubernetes.io/arch
+            operator: In
+            values:
+            - amd64
+          - key: role
+            operator: In
+            values:
+            - management
+
+redis:
+# Update needed in the cm that defines redis_url if usePassword is set to true.
+  usePassword: false
+  cluster:
+    enabled: false
+  master:
+    persistence:
+# TODO: There is a perm issue: Can't open the append-only file: Permission denied
+# TODO: Setting it to false is a temp workaround.  Will re-visit this problem.
+      enabled: false
+    tolerations:
+      - effect: NoSchedule
+        key: management
+        operator: Equal
+        value: "true"
+    nodeSelector:
+      beta.kubernetes.io/arch: amd64
+      role: management
+
+notary:
+  enabled: false
+
+backup:
+  enabled: true
+  timezone: Asia/Seoul
+  schedule: "*/11 16 * * *"
+  kubectl:
+    image:
+      repository: lachlanevenson/k8s-kubectl
+      tag: v1.9.7
+      pullPolicy: IfNotPresent
+  s3:
+    image:
+      repository: mesosphere/aws-cli
+      tag: 1.14.5
+      pullPolicy: IfNotPresent
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+  tolerations:
+    - effect: NoSchedule
+      key: management
+      operator: Equal
+      value: "true"
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+        - matchExpressions:
+          - key: beta.kubernetes.io/arch
+            operator: In
+            values:
+            - amd64
+          - key: role
+            operator: In
+            values:
+            - management

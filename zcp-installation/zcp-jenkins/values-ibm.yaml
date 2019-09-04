@@ -1,0 +1,73 @@
+# Default values for jenkins.
+# This is a YAML-formatted file.
+# Declare name/value pairs to be passed into your templates.
+# name: value
+
+## Overrides for generated resource names
+# See templates/_helpers.tpl
+# nameOverride:
+# fullnameOverride:
+
+Master:
+  Name: jenkins-master
+  Image: "registry.au-syd.bluemix.net/cloudzcp/jenkins"
+  ImageTag: "2.121.3"
+  ImagePullPolicy: "Always"
+# ImagePullSecret: jenkins
+  Component: "jenkins-master"
+  UseSecurity: true
+  AdminUser: admin
+  AdminPassword: jenkins
+  Requests:
+    Cpu: "200m"
+    Memory: "512m"
+  Limits:
+    Cpu: "1"
+    Memory: "2Gi"
+  HostName: jenkins.cloudzcp.io	# CHANGE
+  # For minikube, set this to NodePort, elsewhere use LoadBalancer
+  # Use ClusterIP if your setup includes ingress controller
+  ServiceType: ClusterIP
+  JavaOpts: -Duser.timezone=Asia/Seoul -Xms512m -Xmx1024m
+  InstallPlugins:
+
+  Tolerations:
+  - key: "management"
+    operator: "Equal"
+    value: "true"
+    effect: "NoSchedule"
+    PodAnnotations: {}
+  Affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+        - matchExpressions:
+          - key: beta.kubernetes.io/arch
+            operator: In
+            values:
+            - "amd64"
+          - key: role
+            operator: In
+            values:
+            - "management"
+  Ingress:
+    Annotations:
+    # ingress.bluemix.net/ALB-ID: private-cr9b51e2d31cef4589984913b350fa8ed8-alb1  # CHANGE
+      ingress.bluemix.net/redirect-to-https: "True"
+
+    TLS:
+    - hosts:
+      - jenkins.cloudzcp.io  # CHANGE
+      secretName: cloudzcp-io-cert
+
+Persistence:
+  Enabled: true
+  ## A manually managed Persistent Volume and Claim
+  ## Requires Persistence.Enabled: true
+  ## If defined, PVC must be created manually before volume will be bound
+  ExistingClaim: zcp-jenkins
+
+## Install Default RBAC roles and bindings
+rbac:
+  serviceAccountName: zcp-system-admin
+

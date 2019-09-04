@@ -1,0 +1,49 @@
+image:
+  kubectl:
+    repository: registry.au-syd.bluemix.net/cloudzcp/k8s-kubectl
+  s3:
+    repository: registry.au-syd.bluemix.net/cloudzcp/aws-cli
+
+# CHANGE
+env:
+  #AWS_ACCESS_KEY_ID: ***            # CHANGE
+  #AWS_SECRET_ACCESS_KEY: ***        # CHANGE
+  #S3_ENDPOINT: https://s3.***-ap-geo.objectstorage.softlayer.net  # CHANGE
+  #S3_BUCKET: zcp-backup-***         # CHANGE
+  GITEA_DEPLOY: zcp-git-gitea        # CHANGE
+
+jenkins:
+  schedule: 5 15 * * *  # CHANGE
+  #successfulJobsHistoryLimit:
+  #failedJobsHistoryLimit:
+  serviceAccount: zcp-system-admin     # CHANGE
+
+gitea:
+  schedule: 0 15 * * *  # CHANGE
+  #successfulJobsHistoryLimit:
+  #failedJobsHistoryLimit:
+  serviceAccount: zcp-system-admin     # CHANGE
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+
+tolerations:
+- effect: NoSchedule
+  key: management
+  operator: Equal
+  value: "true"
+affinity:
+  nodeAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: beta.kubernetes.io/arch
+          operator: In
+          values:
+          - amd64
+        - key: role
+          operator: In
+          values:
+          - management
